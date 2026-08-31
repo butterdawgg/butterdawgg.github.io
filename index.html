@@ -429,8 +429,8 @@
 <header class="toolbar">
   <div class="toolbar-left">
     <!-- EDIT: swap YN for your initials -->
-    <div class="logo-mark">YN</div>
-    <div class="logo-word">yourname<span>.dev</span></div>
+    <div class="logo-mark">PV</div>
+    <div class="logo-word">prisacaru-vladimir<span>.dev</span></div>
   </div>
   <nav class="toolbar-tabs">
     <a href="#about" data-tab>About</a>
@@ -494,9 +494,8 @@
               </div>
               <!-- EDIT: 2-4 sentence intro — who you are, what you build, what you're looking for -->
               <p class="bio">
-				I am a student at Howest DAE, Game Development major. I am looking for a game programming internship
-				in the second semester of the 2026-2027 academic year. I specialize in coding gameplay and engine systems in C++.
-				You can find more info on my skills and projects below.
+				I'm a Game Development student at Howest DAE, focused on coding gameplay and engine systems in C++.
+				I'm currently looking for a programming internship for the second semester of the 2026–2027 academic year.
               </p>
               <div class="facts">
                 <!-- EDIT: quick facts -->
@@ -626,23 +625,46 @@
               <div class="chip-row"><span>Vulkan</span><span>DirectX 11</span><span>OpenGL</span></div>
             </div>
           </div>
+		  
+		  <!-- EDIT: fill in the tools/technologies you use day to day -->
+          <div class="skill-group">
+            <div class="skill-group-head"><span class="dot" style="background:var(--gold)"></span><h3>Technologies &amp; Tools</h3></div>
+				
+				<div class="subgroup">
+					<div class="subgroup-label">Code Editors</div>
+					<div class="chip-row"><span>Visual Studio</span><span>JetBrains Rider</span></div>
+				</div>
+				
+				<div class="subgroup">
+					<div class="subgroup-label">Version Control</div>
+					<div class="chip-row"><span>GitHub</span><span>Perforce</span></div>
+				</div>
+				
+				<div class="subgroup">
+					<div class="subgroup-label">Planning</div>
+					<div class="chip-row"><span>Jira</span><span>Hack'n'plan</span></div>
+				</div>
+          </div>
 
           <!-- EDIT: fill in your own soft skills -->
           <div class="skill-group">
             <div class="skill-group-head"><span class="dot" style="background:var(--green)"></span><h3>Soft Skills</h3></div>
-            <div class="chip-row">
-              <span>Communication</span><span>Teamwork</span><span>Problem solving</span>
-              <span>Time management</span><span>Constraint management</span>
+			
+			<div class="subgroup">
+              <div class="subgroup-label">Collaboration</div>
+              <div class="chip-row"><span>Cross-functional teamwork</span><span>Code review</span><span>Technical communication</span></div>
             </div>
-          </div>
 
-          <!-- EDIT: fill in the tools/technologies you use day to day -->
-          <div class="skill-group">
-            <div class="skill-group-head"><span class="dot" style="background:var(--gold)"></span><h3>Technologies &amp; Tools</h3></div>
-            <div class="chip-row">
-              <span>Visual Studio</span><span>Rider</span><span>Perforce</span><span>Jira</span>
-			  <span>Hack'n'plan</span>
+            <div class="subgroup">
+              <div class="subgroup-label">Delivery</div>
+              <div class="chip-row"><span>Working to strict specifications</span><span>Requirement analysis</span><span>Deadline management</span></div>
             </div>
+
+            <div class="subgroup">
+              <div class="subgroup-label">Research &amp; Learning</div>
+              <div class="chip-row"><span>Self-directed technical research</span><span>Reading papers &amp; docs</span><span>Rapid prototyping</span></div>
+            </div>
+			
           </div>
 
         </div>
@@ -726,20 +748,61 @@
     });
   });
 
-  /* ---- Scroll-spy: highlight active tab + hierarchy item ---- */
-  const sections = document.querySelectorAll('main section[id]');
+  /* ---- Scroll-spy: highlight active tab + hierarchy item ----
+     Uses each section's position relative to scroll */
+  const sections = Array.from(document.querySelectorAll('main section[id]'));
   const tabLinks = document.querySelectorAll('[data-tab]');
   const treeLinks = document.querySelectorAll('[data-tree]');
   const setActive = (id) => {
     tabLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
     treeLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
   };
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });
-    }, { rootMargin: '-40% 0px -50% 0px' });
-    sections.forEach(s => io.observe(s));
+
+  const OFFSET = 90; // px from top of viewport that counts as "current"
+  let manualOverride = null;
+
+  function updateActiveOnScroll() {
+    const scrollBottom = window.scrollY + window.innerHeight;
+    const atBottom = scrollBottom >= document.documentElement.scrollHeight - 4;
+
+    if (manualOverride) {
+      // Once the section a user just clicked has actually come into position
+      // (or we've hit the bottom of the page), stop overriding and resume normal spying.
+      const target = document.getElementById(manualOverride);
+      const reached = target && target.getBoundingClientRect().top <= OFFSET + 4;
+      if (reached || atBottom) manualOverride = null;
+      else return;
+    }
+
+    if (atBottom) {
+      setActive(sections[sections.length - 1].id);
+      return;
+    }
+
+    let current = sections[0].id;
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top - OFFSET <= 0) current = s.id;
+    }
+    setActive(current);
   }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => { updateActiveOnScroll(); ticking = false; });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  [...tabLinks, ...treeLinks].forEach(a => {
+    a.addEventListener('click', () => {
+      const id = a.getAttribute('href').slice(1);
+      manualOverride = id;
+      setActive(id);
+    });
+  });
+
+  updateActiveOnScroll();
 </script>
 
 </body>
