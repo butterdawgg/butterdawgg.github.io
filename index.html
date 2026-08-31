@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vladimir Prisacaru - Game Programmer</title>
+<meta name="description" content="Portfolio of Vladimir Prisacaru, a game programmer student specializing in C++, Unity, and Unreal Engine.">
+
+<!--
+     HOW TO USE THIS TEMPLATE
+     Search for "EDIT:" comments — every spot marked needs your info.
+     Everything else (layout, styling, behavior) you can leave alone.
+ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     DESIGN TOKENS — flat Unity Editor (Dark) palette. Solid
+     colors only, no gradients, minimal radius.
+     ============================================================ */
+  :root {
+    --bg:          #282828; /* main / inspector background */
+    --bg-header:   #2f2f2f; /* panel + toolbar headers */
+    --bg-dark:     #1f1f1f; /* sidebar, cards, inputs */
+    --bg-darker:   #141414; /* status bar, deepest chrome */
+    --border:      #181818;
+    --border-lt:   #3c3c3c;
+
+    --text:        #d4d4d4;
+    --text-bright: #f1f1f1;
+    --text-dim:    #9a9a9a;
+    --text-faint:  #6e6e6e;
+
+    --blue:        #4a90d9;
+    --blue-bg:     #2c5d87;
+    --green:       #6bab5b;
+    --gold:        #d9a441;
+
+    --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --radius: 2px;
+    --content-w: 980px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  a { color: inherit; }
+  h1, h2, h3 { margin: 0; font-family: var(--sans); font-weight: 700; color: var(--text-bright); }
+
+  :focus-visible { outline: 1px solid var(--blue); outline-offset: 1px; }
+
+  /* ============================================================
+     TOOLBAR — Unity's top menu/toolbar strip
+     ============================================================ */
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 48px;
+  }
+  .toolbar-left { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 22px; height: 22px;
+    background: var(--blue);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 12px; color: var(--bg-darker);
+  }
+  .logo-word { font-family: var(--mono); font-size: 13px; color: var(--text-bright); font-weight: 600; }
+  .logo-word span { color: var(--text-faint); }
+
+  .toolbar-tabs { display: flex; gap: 2px; }
+  .toolbar-tabs a {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    border-bottom: 2px solid transparent;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .toolbar-tabs a:hover { background: rgba(255,255,255,0.05); color: var(--text-bright); }
+  .toolbar-tabs a.active { color: var(--text-bright); border-color: var(--blue); }
+
+  .toolbar-right { display: flex; align-items: center; gap: 10px; }
+  .play-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-lt);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .play-btn:hover { border-color: var(--blue); }
+  .play-btn .tri { width: 0; height: 0; border-style: solid; border-width: 5px 0 5px 8px; border-color: transparent transparent transparent var(--green); }
+  .play-btn.playing .tri { border-width: 0; width: 8px; height: 10px; border-left: 3px solid var(--green); border-right: 3px solid var(--green); }
+
+  .btn-solid {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--bg-darker);
+    background: var(--blue);
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    border: 1px solid var(--blue);
+  }
+  .btn-solid:hover { background: #5a9de0; }
+
+  .mobile-tabs { display: none; }
+
+  /* ============================================================
+     WORKSPACE — sidebar (Hierarchy) + main content
+     ============================================================ */
+  .workspace { display: flex; align-items: flex-start; }
+
+  .hierarchy {
+    width: 220px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 48px;
+    height: calc(100vh - 48px);
+    background: var(--bg-dark);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+  .hierarchy-head {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    padding: 12px 14px 8px;
+  }
+  .tree { list-style: none; margin: 0; padding: 0 0 16px; }
+  .tree li a {
+    display: block;
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 5px 14px;
+    border-left: 2px solid transparent;
+    transition: background 0.12s, color 0.12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tree li a:hover { background: rgba(255,255,255,0.04); color: var(--text-bright); }
+  .tree li a.active { background: var(--blue-bg); color: #fff; border-left-color: var(--blue); }
+  .tree .child a { padding-left: 30px; font-size: 12px; color: var(--text-faint); }
+  .tree .child a::before { content: '– '; color: var(--text-faint); }
+
+  main.content { flex: 1; min-width: 0; padding: 32px 32px 80px; }
+  .content-inner { max-width: var(--content-w); margin: 0 auto; }
+
+  /* ============================================================
+     PANEL — the reusable "Inspector component" shell
+     ============================================================ */
+  .panel { background: var(--bg); border: 1px solid var(--border); margin-bottom: 28px; scroll-margin-top: 60px; }
+  .panel-head {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  .comp-icon {
+    width: 20px; height: 20px;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bg-darker);
+    flex-shrink: 0;
+  }
+  .icon-blue { background: var(--blue); }
+  .icon-gold { background: var(--gold); }
+  .icon-green { background: var(--green); }
+  .icon-gray { background: var(--text-dim); }
+  .panel-head h2 { font-size: 14px; font-weight: 600; }
+  .panel-head .type { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+  .panel-body { padding: 24px; }
+
+  /* field row, mimics Inspector label/value rows */
+  .field-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .field-row:last-child { border-bottom: none; }
+  .field-label { color: var(--text-faint); }
+  .field-value { color: var(--text); }
+
+  /* ============================================================
+     ABOUT
+     ============================================================ */
+  .about-layout { display: flex; gap: 28px; align-items: flex-start; }
+  .avatar {
+    width: 148px; height: 148px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-lt);
+    border-radius: var(--radius);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .avatar-placeholder { text-align: center; color: var(--text-faint); font-size: 11px; padding: 10px; font-family: var(--mono); }
+
+  .about-main { flex: 1; min-width: 0; }
+  .about-main h1 { font-size: 26px; margin-bottom: 8px; }
+  .status-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 26px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-lt);
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 0 10px;
+    border-radius: var(--radius);
+    box-sizing: border-box;
+  }
+  .status-pill::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+  .status-row .btn-solid {
+    display: inline-flex; align-items: center;
+    height: 26px;
+    padding: 0 14px;
+    box-sizing: border-box;
+  }
+  .about-main p.bio { color: var(--text); font-size: 14px; max-width: 620px; margin: 0 0 20px; }
+
+  .facts { margin-top: 4px; max-width: 480px; }
+
+  /* ============================================================
+     PROJECTS
+     ============================================================ */
+  .project-list { display: flex; flex-direction: column; gap: 20px; }
+  .project-card { background: var(--bg-dark); border: 1px solid var(--border); display: flex; gap: 20px; }
+  .project-media {
+    width: 320px; flex-shrink: 0;
+    position: relative;
+    background: var(--bg-darker);
+    border-right: 1px solid var(--border);
+  }
+  .slide {
+    display: none;
+    width: 100%; height: 190px;
+    align-items: center; justify-content: center;
+    background: var(--bg-darker);
+    color: var(--text-faint);
+    font-family: var(--mono);
+    font-size: 12px;
+    text-align: center;
+    border: 1px dashed var(--border-lt);
+  }
+  .slide.active { display: flex; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .dots { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+  .dots button {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--border-lt);
+    border: none; padding: 0; cursor: pointer;
+  }
+  .dots button.active { background: var(--blue); }
+
+  .project-info { flex: 1; padding: 18px 18px 18px 0; min-width: 0; }
+  .project-info .kind { font-family: var(--mono); font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; }
+  .project-info h3 { font-size: 16px; margin: 6px 0 8px; }
+  .project-info p.desc { color: var(--text-dim); font-size: 13px; margin: 0 0 14px; max-width: 560px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag-row span {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--bg);
+    border: 1px solid var(--border-lt);
+    padding: 3px 8px;
+    border-radius: var(--radius);
+  }
+  .link-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .link-row a {
+    font-size: 12px;
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .link-row a:hover { border-color: var(--blue); }
+
+  @media (max-width: 760px) {
+    .project-card { flex-direction: column; }
+    .project-media { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+    .project-info { padding: 16px; }
+  }
+
+  /* ============================================================
+     SKILLS
+     ============================================================ */
+  .skill-group { margin-bottom: 22px; }
+  .skill-group:last-child { margin-bottom: 0; }
+  .skill-group-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .skill-group-head .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .skill-group-head h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-bright); }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip-row span {
+    font-size: 12.5px;
+    color: var(--text);
+    background: var(--bg-dark);
+    border: 1px solid var(--border-lt);
+    padding: 5px 10px;
+    border-radius: var(--radius);
+  }
+  .subgroup { margin-bottom: 12px; }
+  .subgroup:last-child { margin-bottom: 0; }
+  .subgroup-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  /* ============================================================
+     CONTACT — console-style rows
+     ============================================================ */
+  .console-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+  }
+  .console-toolbar .sep { width: 1px; height: 14px; background: var(--border-lt); }
+  .log-list { display: flex; flex-direction: column; }
+  .log-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.12s;
+  }
+  .log-row:last-child { border-bottom: none; }
+  .log-row:hover { background: rgba(255,255,255,0.03); }
+  .log-icon {
+    width: 22px; height: 22px; flex-shrink: 0;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--bg-darker);
+  }
+  .log-text { flex: 1; min-width: 0; }
+  .log-text .label { font-size: 12px; color: var(--text-faint); font-family: var(--mono); }
+  .log-text .value { font-size: 14px; color: var(--text-bright); }
+  .log-row .go { font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
+
+  /* ============================================================
+     STATUS BAR
+     ============================================================ */
+  .statusbar {
+    position: sticky; bottom: 0;
+    background: var(--bg-darker);
+    border-top: 1px solid var(--border);
+    padding: 6px 16px;
+    display: flex; align-items: center; gap: 16px;
+    font-family: var(--mono); font-size: 11px; color: var(--text-faint);
+  }
+  .statusbar .msg { color: var(--text-dim); }
+  .statusbar .right { margin-left: auto; display: flex; gap: 16px; }
+
+  /* subtle play-mode tint, solid color at low opacity — no gradient */
+  body.is-playing .toolbar { box-shadow: inset 0 -2px 0 var(--blue); }
+  body.is-playing .workspace::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: var(--blue);
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 40;
+  }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 900px) {
+    .hierarchy { display: none; }
+    .mobile-tabs {
+      display: flex; gap: 4px; overflow-x: auto;
+      background: var(--bg-dark);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+    }
+    .mobile-tabs a {
+      font-size: 12px; color: var(--text-dim); text-decoration: none;
+      padding: 6px 10px; border-radius: var(--radius); white-space: nowrap;
+      border: 1px solid var(--border-lt);
+    }
+    .mobile-tabs a.active { color: var(--text-bright); border-color: var(--blue); }
+    .toolbar-tabs { display: none; }
+    main.content { padding: 20px 16px 60px; }
+    .about-layout { flex-direction: column; }
+    .avatar { width: 100%; height: 200px; }
+    .field-row { grid-template-columns: 110px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="toolbar">
+  <div class="toolbar-left">
+    <!-- EDIT: swap YN for your initials -->
+    <div class="logo-mark">YN</div>
+    <div class="logo-word">yourname<span>.dev</span></div>
+  </div>
+  <nav class="toolbar-tabs">
+    <a href="#about" data-tab>About</a>
+    <a href="#projects" data-tab>Projects</a>
+    <a href="#skills" data-tab>Skills</a>
+    <a href="#contact" data-tab>Contact</a>
+  </nav>
+  <div class="toolbar-right">
+    <button class="play-btn" id="playBtn" type="button" aria-label="Toggle play mode">
+      <span class="tri"></span> Play
+    </button>
+  </div>
+</header>
+
+<nav class="mobile-tabs">
+  <a href="#about" data-tab>About</a>
+  <a href="#projects" data-tab>Projects</a>
+  <a href="#skills" data-tab>Skills</a>
+  <a href="#contact" data-tab>Contact</a>
+</nav>
+
+<div class="workspace">
+  <aside class="hierarchy">
+    <div class="hierarchy-head">Hierarchy</div>
+    <ul class="tree">
+      <li><a href="#about" data-tree>Profile</a></li>
+      <li><a href="#projects" data-tree>Projects</a></li>
+      <!-- EDIT: keep these nested names in sync with your project titles below -->
+      <li class="child"><a href="#project-1">Exaple Project 1</a></li>
+      <li class="child"><a href="#project-2">Exaple Project 2</a></li>
+      <li><a href="#skills" data-tree>Skillset</a></li>
+      <li><a href="#contact" data-tree>Contact</a></li>
+    </ul>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner">
+
+      <!-- ============================================================
+           ABOUT
+           ============================================================ -->
+      <section id="about" class="panel">
+        <div class="panel-head">
+          <div class="comp-icon icon-blue">P</div>
+          <h2>Profile</h2>
+          <span class="type">GameObject / Person</span>
+        </div>
+        <div class="panel-body">
+          <div class="about-layout">
+            <div class="avatar">
+              <!-- EDIT: replace this div's content with <img src="your-photo.jpg" alt="Your Name"> -->
+              <div class="avatar-placeholder">your photo<br>148×148</div>
+            </div>
+            <div class="about-main">
+              <!-- EDIT: your name -->
+              <h1>Vladimir Prisacaru</h1>
+              <div class="status-row">
+                <div class="status-pill">Student · Seeking Internship</div>
+                <!-- EDIT: link to your CV/resume PDF, add it to the repo -->
+                <a href="resume.pdf" class="btn-solid">Download CV</a>
+              </div>
+              <!-- EDIT: 2-4 sentence intro — who you are, what you build, what you're looking for -->
+              <p class="bio">
+				I am a student at Howest DAE, Game Development major. I am looking for a game programming internship
+				in the second semester of the 2026-2027 academic year. I specialize in coding gameplay and engine systems in C++.
+				You can find more info on my skills and projects below.
+              </p>
+              <div class="facts">
+                <!-- EDIT: quick facts -->
+                <div class="field-row"><div class="field-label">Status</div><div class="field-value">Bachelor of Digital Arts and Entertainment, Game Development, Year 3</div></div>
+                <div class="field-row"><div class="field-label">Focus</div><div class="field-value">Gameplay &amp; engine programming</div></div>
+                <div class="field-row"><div class="field-label">Location</div><div class="field-value">Kortrijk, Belgium</div></div>
+                <div class="field-row"><div class="field-label">Available</div><div class="field-value">Winter-spring 2027 internship</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           PROJECTS
+           ============================================================ -->
+      <section id="projects" class="panel">
+        <div class="panel-head">
+          <div class="comp-icon icon-gold">▣</div>
+          <h2>Projects</h2>
+          <span class="type">List&lt;Project&gt;</span>
+        </div>
+        <div class="panel-body">
+          <div class="project-list">
+
+
+
+            <!-- EDIT: duplicate this whole .project-card block per project.
+                 Replace each .slide's placeholder text with <img src="..."> to show a real screenshot. -->
+            <article class="project-card" id="project-1">
+              <div class="project-media">
+                <div class="carousel">
+                  <div class="slide active">Screenshot 1<br>1600×900</div>
+                  <div class="slide">Screenshot 2<br>1600×900</div>
+                  <div class="slide">Screenshot 3<br>1600×900</div>
+                </div>
+                <div class="dots">
+                  <button class="active" aria-label="Slide 1"></button>
+                  <button aria-label="Slide 2"></button>
+                  <button aria-label="Slide 3"></button>
+                </div>
+              </div>
+              <div class="project-info">
+                <div class="kind">Category / Subcategory</div>
+                <h3>Example Project 1</h3>
+                <p class="desc">
+                  Description description description description description description description description
+				  description description description description description description description description.
+                </p>
+                <div class="tag-row"><span>tag 1</span><span>tag 2</span><span>tag 3</span><span>tag 4</span></div>
+                <div class="link-row">
+                  <a href="#">GitHub →</a>
+                  <a href="#">Play on itch.io →</a>
+                  <a href="#">Devlog →</a>
+                </div>
+              </div>
+            </article>
+			
+			<article class="project-card" id="project-2">
+              <div class="project-media">
+                <div class="carousel">
+                  <div class="slide active">Screenshot 1<br>1600×900</div>
+                  <div class="slide">Screenshot 2<br>1600×900</div>
+                  <div class="slide">Screenshot 3<br>1600×900</div>
+                </div>
+                <div class="dots">
+                  <button class="active" aria-label="Slide 1"></button>
+                  <button aria-label="Slide 2"></button>
+                  <button aria-label="Slide 3"></button>
+                </div>
+              </div>
+              <div class="project-info">
+                <div class="kind">Category / Subcategory</div>
+                <h3>Example Project 2</h3>
+                <p class="desc">
+                  Description description description description description description description description
+				  description description description description description description description description.
+                </p>
+                <div class="tag-row"><span>tag 1</span><span>tag 2</span><span>tag 3</span><span>tag 4</span></div>
+                <div class="link-row">
+                  <a href="#">GitHub →</a>
+                  <a href="#">Play on itch.io →</a>
+                  <a href="#">Devlog →</a>
+                </div>
+              </div>
+            </article>
+
+
+
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SKILLS
+           ============================================================ -->
+      <section id="skills" class="panel">
+        <div class="panel-head">
+          <div class="comp-icon icon-green">S</div>
+          <h2>Skillset</h2>
+          <span class="type">Component</span>
+        </div>
+        <div class="panel-body">
+
+          <!-- EDIT: fill in your own hard skills — add/remove chips or whole subgroups freely -->
+          <div class="skill-group">
+            <div class="skill-group-head"><span class="dot" style="background:var(--blue)"></span><h3>Hard Skills</h3></div>
+
+            <div class="subgroup">
+              <div class="subgroup-label">Languages</div>
+              <div class="chip-row"><span>C++</span><span>C#</span></div>
+            </div>
+
+            <div class="subgroup">
+              <div class="subgroup-label">Engines</div>
+              <div class="chip-row"><span>Unity</span><span>Unreal Engine</span></div>
+            </div>
+
+            <div class="subgroup">
+              <div class="subgroup-label">DevOps</div>
+              <div class="chip-row"><span>Git</span><span>CMake</span></div>
+            </div>
+
+            <div class="subgroup">
+              <div class="subgroup-label">Graphics</div>
+              <div class="chip-row"><span>Vulkan</span><span>DirectX 11</span><span>OpenGL</span></div>
+            </div>
+          </div>
+
+          <!-- EDIT: fill in your own soft skills -->
+          <div class="skill-group">
+            <div class="skill-group-head"><span class="dot" style="background:var(--green)"></span><h3>Soft Skills</h3></div>
+            <div class="chip-row">
+              <span>Communication</span><span>Teamwork</span><span>Problem solving</span>
+              <span>Time management</span><span>Constraint management</span>
+            </div>
+          </div>
+
+          <!-- EDIT: fill in the tools/technologies you use day to day -->
+          <div class="skill-group">
+            <div class="skill-group-head"><span class="dot" style="background:var(--gold)"></span><h3>Technologies &amp; Tools</h3></div>
+            <div class="chip-row">
+              <span>Visual Studio</span><span>Rider</span><span>Perforce</span><span>Jira</span>
+			  <span>Hack'n'plan</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================
+           CONTACT
+           ============================================================ -->
+      <section id="contact" class="panel">
+        <div class="panel-head">
+          <div class="comp-icon icon-gray">C</div>
+          <h2>Contact</h2>
+          <span class="type">Console</span>
+        </div>
+        <div class="console-toolbar">
+          <span>Clear</span><span class="sep"></span><span>Collapse</span><span class="sep"></span><span>4 entries</span>
+        </div>
+        <div class="log-list">
+          <!-- EDIT: swap in your real links -->
+          <a class="log-row" href="mailto:butterdawgg06@gmail.com">
+            <div class="log-icon icon-blue">@</div>
+            <div class="log-text"><div class="label">Email</div><div class="value">butterdawgg06@gmail.com</div></div>
+            <div class="go">↗</div>
+          </a>
+          <a class="log-row" href="https://github.com/butterdawgg" target="_blank" rel="noopener">
+            <div class="log-icon icon-gray">GH</div>
+            <div class="log-text"><div class="label">GitHub</div><div class="value">github.com/buttedawgg</div></div>
+            <div class="go">↗</div>
+          </a>
+          <a class="log-row" href="https://www.linkedin.com/in/vladimir-prisacaru-65785a32b/" target="_blank" rel="noopener">
+            <div class="log-icon icon-blue">in</div>
+            <div class="log-text"><div class="label">LinkedIn</div><div class="value">linkedin.com/in/vladimir-prisacaru</div></div>
+            <div class="go">↗</div>
+          </a>
+          <a class="log-row" href="https://butterdawgg.itch.io" target="_blank" rel="noopener">
+            <div class="log-icon icon-gold">IO</div>
+            <div class="log-text"><div class="label">itch.io</div><div class="value">butterdawgg.itch.io</div></div>
+            <div class="go">↗</div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<footer class="statusbar">
+  <span class="msg" id="statusMsg">Ready</span>
+  <div class="right">
+    <span id="statusYear"></span>
+    <span>Built with HTML &amp; CSS · GitHub Pages</span>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('statusYear').textContent = '© ' + new Date().getFullYear();
+
+  /* ---- Play mode toggle (toolbar signature detail) ---- */
+  const playBtn = document.getElementById('playBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  let playing = false;
+  playBtn.addEventListener('click', () => {
+    playing = !playing;
+    document.body.classList.toggle('is-playing', playing);
+    playBtn.classList.toggle('playing', playing);
+    statusMsg.textContent = playing ? 'Entering Play Mode…' : 'Exiting Play Mode…';
+    setTimeout(() => { statusMsg.textContent = playing ? 'Play Mode' : 'Ready'; }, 600);
+  });
+
+  /* ---- Project screenshot carousels ---- */
+  document.querySelectorAll('.project-media').forEach(media => {
+    const slides = media.querySelectorAll('.slide');
+    const dots = media.querySelectorAll('.dots button');
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        slides.forEach(s => s.classList.remove('active'));
+        dots.forEach(d => d.classList.remove('active'));
+        slides[i].classList.add('active');
+        dot.classList.add('active');
+      });
+    });
+  });
+
+  /* ---- Scroll-spy: highlight active tab + hierarchy item ---- */
+  const sections = document.querySelectorAll('main section[id]');
+  const tabLinks = document.querySelectorAll('[data-tab]');
+  const treeLinks = document.querySelectorAll('[data-tree]');
+  const setActive = (id) => {
+    tabLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    treeLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    sections.forEach(s => io.observe(s));
+  }
+</script>
+
+</body>
+</html>
